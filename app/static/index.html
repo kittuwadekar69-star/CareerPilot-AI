@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareerPilot AI</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #080b14;
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            margin: auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            padding: 22px 30px;
+            border-bottom: 1px solid #202637;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        .logo span {
+            color: #6c8cff;
+        }
+
+        .status {
+            font-size: 13px;
+            color: #7ee787;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 55px 20px 25px;
+        }
+
+        .hero h1 {
+            font-size: 42px;
+            margin-bottom: 12px;
+        }
+
+        .hero h1 span {
+            color: #6c8cff;
+        }
+
+        .hero p {
+            color: #a8b0c0;
+            font-size: 16px;
+        }
+
+        .suggestions {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 20px;
+        }
+
+        .suggestion {
+            background: #111727;
+            border: 1px solid #28324a;
+            color: #d8deeb;
+            padding: 10px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .suggestion:hover {
+            border-color: #6c8cff;
+            color: white;
+        }
+
+        #chat {
+            flex: 1;
+            padding: 20px 30px;
+            overflow-y: auto;
+            max-height: 55vh;
+        }
+
+        .message {
+            display: flex;
+            margin: 15px 0;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .bubble {
+            max-width: 75%;
+            padding: 14px 17px;
+            border-radius: 15px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+
+        .user .bubble {
+            background: #536dfe;
+        }
+
+        .bot .bubble {
+            background: #151c2d;
+            border: 1px solid #28324a;
+            color: #dfe5f2;
+        }
+
+        .input-area {
+            padding: 20px 30px 30px;
+        }
+
+        .input-box {
+            display: flex;
+            gap: 10px;
+            background: #111727;
+            border: 1px solid #29344c;
+            border-radius: 15px;
+            padding: 8px;
+        }
+
+        textarea {
+            flex: 1;
+            resize: none;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: white;
+            padding: 12px;
+            font-size: 15px;
+            min-height: 48px;
+        }
+
+        button {
+            border: none;
+            border-radius: 11px;
+            background: #536dfe;
+            color: white;
+            padding: 0 22px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #4058dc;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .typing {
+            color: #8f9ab0;
+            font-size: 14px;
+            padding: 5px 0;
+        }
+
+        footer {
+            text-align: center;
+            color: #657086;
+            font-size: 12px;
+            padding-bottom: 15px;
+        }
+
+        @media (max-width: 600px) {
+            .hero h1 {
+                font-size: 32px;
+            }
+
+            header {
+                padding: 18px;
+            }
+
+            #chat,
+            .input-area {
+                padding-left: 18px;
+                padding-right: 18px;
+            }
+
+            .bubble {
+                max-width: 90%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <header>
+        <div class="logo">Career<span>Pilot</span> AI</div>
+        <div class="status">● Local AI Online</div>
+    </header>
+
+    <section class="hero">
+        <h1>Your AI <span>Career Copilot</span></h1>
+        <p>Projects, coding, resumes, interviews and placement guidance — all in one place.</p>
+    </section>
+
+    <div class="suggestions">
+        <div class="suggestion" onclick="useSuggestion('Suggest a software project for a final year CSE student.')">
+            💡 Project Ideas
+        </div>
+
+        <div class="suggestion" onclick="useSuggestion('Help me prepare for a technical interview.')">
+            💻 Interview Prep
+        </div>
+
+        <div class="suggestion" onclick="useSuggestion('Improve my resume for a software developer role.')">
+            📄 Resume
+        </div>
+
+        <div class="suggestion" onclick="useSuggestion('Give me a coding problem for placement preparation.')">
+            🧠 Coding
+        </div>
+    </div>
+
+    <div id="chat"></div>
+
+    <div class="input-area">
+
+        <div class="input-box">
+            <textarea
+                id="message"
+                placeholder="Ask CareerPilot anything..."
+                onkeydown="handleKey(event)"
+            ></textarea>
+
+            <button id="sendButton" onclick="sendMessage()">
+                Send
+            </button>
+        </div>
+
+    </div>
+
+    <footer>
+        CareerPilot AI • Powered by local Qwen3 LLM
+    </footer>
+
+</div>
+
+<script>
+
+    const conversationId =
+        "careerpilot-" + Date.now();
+
+    const chat = document.getElementById("chat");
+    const messageInput = document.getElementById("message");
+    const sendButton = document.getElementById("sendButton");
+
+    function addMessage(text, type) {
+
+        const wrapper = document.createElement("div");
+        wrapper.className = "message " + type;
+
+        const bubble = document.createElement("div");
+        bubble.className = "bubble";
+
+        bubble.textContent = text;
+
+        wrapper.appendChild(bubble);
+        chat.appendChild(wrapper);
+
+        chat.scrollTop = chat.scrollHeight;
+    }
+
+    function useSuggestion(text) {
+        messageInput.value = text;
+        sendMessage();
+    }
+
+    function handleKey(event) {
+
+        if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault();
+            sendMessage();
+        }
+    }
+
+    async function sendMessage() {
+
+        const message = messageInput.value.trim();
+
+        if (!message) return;
+
+        addMessage(message, "user");
+
+        messageInput.value = "";
+        sendButton.disabled = true;
+
+        const typing = document.createElement("div");
+        typing.className = "typing";
+        typing.textContent = "CareerPilot is thinking...";
+        chat.appendChild(typing);
+
+        chat.scrollTop = chat.scrollHeight;
+
+        try {
+
+            const response = await fetch("/chat", {
+
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    conversation_id: conversationId,
+                    message: message
+                })
+
+            });
+
+            const data = await response.json();
+
+            typing.remove();
+
+            if (!response.ok) {
+                throw new Error(data.detail || "Something went wrong.");
+            }
+
+            addMessage(data.reply, "bot");
+
+        } catch (error) {
+
+            typing.remove();
+
+            addMessage(
+                "Sorry, I couldn't process your request. Please try again.",
+                "bot"
+            );
+
+            console.error(error);
+
+        } finally {
+
+            sendButton.disabled = false;
+            messageInput.focus();
+
+        }
+    }
+
+    addMessage(
+        "Hi! I'm CareerPilot AI 👋\n\nI can help you with projects, coding, resumes, technical interviews and placement preparation. What would you like to work on?",
+        "bot"
+    );
+
+</script>
+
+</body>
+</html>
